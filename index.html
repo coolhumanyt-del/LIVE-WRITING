@@ -2,7 +2,7 @@
 <html lang="pa">
 <head>
   <meta charset="UTF-8">
-  <title>Direct YouTube Punjabi Transcriber</title>
+  <title>YouTube Live Web Transcriber (No Mic / Pure Web)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,33 +13,42 @@
       height: 100vh;
       display: flex;
       flex-direction: column;
-      padding: 14px;
-      gap: 12px;
+      padding: 12px;
+      gap: 10px;
       overflow: hidden;
     }
 
     header {
       background: #131c2e;
+      border: 1px solid #1e293b;
       padding: 10px 16px;
       border-radius: 6px;
-      border: 1px solid #1e293b;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .brand {
-      font-size: 15px;
-      font-weight: bold;
-      color: #38bdf8;
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    .status-tag {
+      font-size: 12px;
+      color: #94a3b8;
+      background: #0f172a;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid #1e293b;
     }
 
     .input-bar {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       background: #131c2e;
       padding: 10px;
       border-radius: 6px;
@@ -60,7 +69,7 @@
       background: #2563eb;
       color: #fff;
       border: none;
-      padding: 8px 18px;
+      padding: 8px 16px;
       font-size: 13px;
       font-weight: bold;
       border-radius: 4px;
@@ -71,13 +80,8 @@
       transition: background 0.2s;
     }
     .btn:hover { background: #1d4ed8; }
-
-    .btn-live {
-      background: #16a34a;
-    }
-    .btn-live.active {
-      background: #dc2626;
-    }
+    .btn-stop { background: #dc2626; }
+    .btn-stop:hover { background: #b91c1c; }
 
     .workspace {
       flex: 1;
@@ -96,7 +100,7 @@
       overflow: hidden;
     }
 
-    .panel-header {
+    .panel-head {
       padding: 8px 12px;
       background: #0f172a;
       border-bottom: 1px solid #1e293b;
@@ -115,24 +119,39 @@
       background: #000;
     }
 
-    .transcript-box {
+    .transcript-view {
       flex: 1;
       background: #0b0f19;
-      border: 1px solid #1e293b;
       margin: 10px;
       border-radius: 4px;
+      border: 1px solid #1e293b;
       padding: 12px;
-      color: #f1f5f9;
-      font-size: 15px;
-      line-height: 1.7;
       overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .interim {
+    .log-line {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 6px;
+    }
+
+    .log-time {
       color: #38bdf8;
-      font-style: italic;
+      font-weight: 600;
+      font-size: 11px;
+      margin-right: 6px;
+    }
+
+    .empty-hint {
+      color: #64748b;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 40px;
     }
   </style>
 </head>
@@ -140,132 +159,148 @@
 
   <header>
     <div class="brand">
-      <span>🎙️ YouTube 1-ਕਲਿੱਕ ਪੰਜਾਬੀ ਲਾਈਵ ਟ੍ਰਾਂਸਕ੍ਰਾਈਬਰ</span>
+      <span>⚡ YouTube ਲਾਈਵ ਡਿਜੀਟਲ ਟ੍ਰਾਂਸਕ੍ਰਾਈਬਰ (Web-Native)</span>
     </div>
-    <span id="statusIndicator" style="font-size: 12px; color: #94a3b8;">ਸਥਿਤੀ: ਤਿਆਰ</span>
+    <span class="status-tag" id="statusState">ਸਥਿਤੀ: ਰੈਡੀ</span>
   </header>
 
   <div class="input-bar">
-    <input type="text" id="ytUrl" placeholder="ਯੂਟਿਊਬ ਲਿੰਕ ਪਾਓ (e.g. https://www.youtube.com/watch?v=...)">
-    <button class="btn btn-live" id="runBtn" onclick="toggleStart()">
-      <span id="btnIcon">▶️</span> <span id="btnLabel">ਵੀਡੀਓ ਚਲਾਓ ਤੇ ਟਾਈਪ ਕਰੋ</span>
+    <input type="text" id="ytUrl" placeholder="ਯੂਟਿਊਬ ਲਾਈਵ ਵੀਡੀਓ ਲਿੰਕ ਪਾਓ (e.g. https://www.youtube.com/watch?v=... ਜਾਂ https://youtu.be/...)">
+    <button class="btn" id="streamBtn" onclick="toggleProcessing()">
+      <span id="btnText">ਲਾਈਵ ਚਲਾਓ ਤੇ ਕੱਢੋ</span>
     </button>
   </div>
 
   <div class="workspace">
     
-    <!-- ਪਲੇਅਰ -->
+    <!-- ਵੀਡੀਓ ਪਲੇਅਰ -->
     <div class="panel">
-      <div class="panel-header">
-        <span>ਲਾਈਵ ਸਟ੍ਰੀਮ ਵੀਡੀਓ</span>
+      <div class="panel-head">
+        <span>ਲਾਈਵ ਵੀਡੀਓ ਸਟ੍ਰੀਮ</span>
+        <span id="liveBadge" style="color: #64748b;">ਕੋਈ ਸਟ੍ਰੀਮ ਨਹੀਂ</span>
       </div>
-      <iframe id="player" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <iframe id="videoPlayer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
 
-    <!-- ਪੰਜਾਬੀ ਟੈਕਸਟ -->
+    <!-- ਨਾਲੋ-ਨਾਲ ਪੰਜਾਬੀ ਟੈਕਸਟ -->
     <div class="panel">
-      <div class="panel-header">
-        <span>ਰੀਅਲ-ਟਾਈਮ ਪੰਜਾਬੀ ਟਾਈਪਿੰਗ</span>
+      <div class="panel-head">
+        <span>ਲਾਈਵ ਪੰਜਾਬੀ ਲਿਖਤ (ਟਾਈਮਕੋਡ ਸਮੇਤ)</span>
         <div style="display: flex; gap: 6px;">
-          <button class="btn" style="padding: 2px 8px; font-size: 11px; background: #334155;" onclick="copyText()">ਕਾਪੀ</button>
-          <button class="btn" style="padding: 2px 8px; font-size: 11px; background: #334155;" onclick="clearText()">ਸਾਫ਼ ਕਰੋ</button>
+          <button class="btn" style="padding: 2px 8px; font-size: 11px; background: #334155;" onclick="copyAllText()">ਸਾਰਾ ਕਾਪੀ ਕਰੋ</button>
+          <button class="btn" style="padding: 2px 8px; font-size: 11px; background: #334155;" onclick="clearBox()">ਸਾਫ਼ ਕਰੋ</button>
         </div>
       </div>
-      <div class="transcript-box" id="textBox">ਵੀਡੀਓ ਸ਼ੁਰੂ ਹੋਣ 'ਤੇ ਇੱਥੇ ਪੰਜਾਬੀ ਟਾਈਪ ਹੋਣਾ ਸ਼ੁਰੂ ਹੋ ਜਾਵੇਗਾ...</div>
+      <div class="transcript-view" id="transcriptContainer">
+        <div class="empty-hint" id="hintBox">ਵੀਡੀਓ ਲਿੰਕ ਪਾ ਕੇ "ਲਾਈਵ ਚਲਾਓ ਤੇ ਕੱਢੋ" ਦਬਾਓ। ਇੱਥੇ ਡਿਜੀਟਲ ਸਟ੍ਰੀਮ ਤੋਂ ਪੰਜਾਬੀ ਟਾਈਪ ਹੁੰਦੀ ਰਹੇਗੀ।</div>
+      </div>
     </div>
 
   </div>
 
 <script>
-  function getVideoId(url) {
-    const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(reg);
-    return (match && match[2].length === 11) ? match[2] : null;
-  }
-
   let isRunning = false;
-  let fullText = "";
-  let recognition = null;
+  let pollInterval = null;
+  let seenItems = new Set();
 
-  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    const SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechAPI();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'pa-IN'; // Punjabi
-
-    recognition.onresult = (e) => {
-      let temp = "";
-      for (let i = e.resultIndex; i < e.results.length; ++i) {
-        const words = e.results[i][0].transcript;
-        if (e.results[i].isFinal) {
-          const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          fullText += `[${time}] ${words}\n`;
-        } else {
-          temp += words;
-        }
-      }
-      const box = document.getElementById('textBox');
-      box.innerHTML = `${fullText}<span class="interim">${temp}</span>`;
-      box.scrollTop = box.scrollHeight;
-    };
-
-    recognition.onend = () => {
-      if (isRunning) {
-        try { recognition.start(); } catch(err) {}
-      }
-    };
+  function getVideoId(url) {
+    const m = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
+    return (m && m[2].length === 11) ? m[2] : null;
   }
 
-  function toggleStart() {
-    const url = document.getElementById('ytUrl').value.trim();
-    const id = getVideoId(url);
+  async function fetchLiveSubtitles(videoId) {
+    try {
+      // ਲਾਈਵ ਪਬਲਿਕ ਇਨਵੀਡੀਅਸ/ਯੂਟਿਊਬ ਕੈਪਸ਼ਨ ਐਂਡਪੁਆਇੰਟ
+      const endpoint = `https://invidious.jing.rocks/api/v1/captions/${videoId}?lang=pa`;
+      const res = await fetch(endpoint);
+      if (!res.ok) return;
+      const data = await res.text();
 
-    if (!isRunning) {
-      if (!id) {
-        alert("ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਸਹੀ YouTube URL ਪਾਓ!");
-        return;
-      }
-
-      // 1. ਉਸੇ ਪੇਜ 'ਤੇ ਵੀਡੀਓ ਚਲਾਓ
-      document.getElementById('player').src = `https://www.youtube.com/embed/${id}?autoplay=1&enablejsapi=1`;
-
-      // 2. ਬਿਨਾਂ ਕਿਸੇ ਸਕ੍ਰੀਨ ਸ਼ੇਅਰ ਦੇ ਸਿੱਧੀ ਟ੍ਰਾਂਸਕ੍ਰਿਪਸ਼ਨ ਸ਼ੁਰੂ
-      try {
-        recognition.start();
-        isRunning = true;
-      } catch(e) {
-        console.warn(e);
-      }
-
-      document.getElementById('runBtn').className = "btn btn-live active";
-      document.getElementById('btnIcon').innerText = "⏹️";
-      document.getElementById('btnLabel').innerText = "ਬੰਦ ਕਰੋ";
-      document.getElementById('statusIndicator').innerText = "ਸਥਿਤੀ: ਲਾਈਵ ਚੱਲ ਰਿਹਾ ਹੈ";
-      document.getElementById('statusIndicator').style.color = "#ef4444";
-
-    } else {
-      // ਬੰਦ ਕਰਨਾ
-      isRunning = false;
-      try { recognition.stop(); } catch(e) {}
-      document.getElementById('player').src = "";
-      document.getElementById('runBtn').className = "btn btn-live";
-      document.getElementById('btnIcon').innerText = "▶️";
-      document.getElementById('btnLabel').innerText = "ਵੀਡੀਓ ਚਲਾਓ ਤੇ ਟਾਈਪ ਕਰੋ";
-      document.getElementById('statusIndicator').innerText = "ਸਥਿਤੀ: ਰੋਕਿਆ ਗਿਆ";
-      document.getElementById('statusIndicator').style.color = "#94a3b8";
+      // VTT/SRT ਲਾਈਨਾਂ ਪੜ੍ਹਨਾ
+      const lines = data.split('\n');
+      lines.forEach(line => {
+        const clean = line.trim();
+        if (clean && !clean.includes('-->') && !clean.match(/^\d+$/) && !clean.includes('WEBVTT')) {
+          if (!seenItems.has(clean)) {
+            seenItems.add(clean);
+            appendLine(clean);
+          }
+        }
+      });
+    } catch (e) {
+      // ਲਾਈਵ ਪੋਲਿੰਗ ਫਾਲਬੈਕ
     }
   }
 
-  function copyText() {
-    navigator.clipboard.writeText(document.getElementById('textBox').innerText).then(() => {
-      alert("ਟ੍ਰਾਂਸਕ੍ਰਿਪਟ ਕਾਪੀ ਹੋ ਗਈ!");
-    });
+  function appendLine(text) {
+    const hint = document.getElementById('hintBox');
+    if (hint) hint.remove();
+
+    const container = document.getElementById('transcriptContainer');
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    const lineElem = document.createElement('div');
+    lineElem.className = 'log-line';
+    lineElem.innerHTML = `<span class="log-time">[${timeStr}]</span> ${text}`;
+
+    container.appendChild(lineElem);
+    container.scrollTop = container.scrollHeight;
   }
 
-  function clearText() {
-    fullText = "";
-    document.getElementById('textBox').innerHTML = "";
+  function toggleProcessing() {
+    const url = document.getElementById('ytUrl').value.trim();
+    const btn = document.getElementById('streamBtn');
+    const status = document.getElementById('statusState');
+    const badge = document.getElementById('liveBadge');
+
+    if (!isRunning) {
+      const vid = getVideoId(url);
+      if (!vid) {
+        alert("ਕਿਰਪਾ ਕਰਕੇ ਸਹੀ YouTube ਲਿੰਕ ਪਾਓ!");
+        return;
+      }
+
+      // 1. ਯੂਟਿਊਬ ਪਲੇਅਰ ਚਲਾਓ (CC ਆਟੋ-ਆਨ ਨਾਲ)
+      document.getElementById('videoPlayer').src = `https://www.youtube.com/embed/${vid}?autoplay=1&cc_load_policy=1&hl=pa`;
+
+      isRunning = true;
+      btn.className = "btn btn-stop";
+      document.getElementById('btnText').innerText = "ਸਟ੍ਰੀਮ ਰੋਕੋ";
+      status.innerText = "ਸਥਿਤੀ: ਲਾਈਵ ਫੈਚ ਹੋ ਰਿਹਾ ਹੈ";
+      status.style.color = "#38bdf8";
+      badge.innerText = "🔴 ਲਾਈਵ ਚੱਲ ਰਿਹਾ ਹੈ";
+      badge.style.color = "#ef4444";
+
+      // 2. ਰੀਅਲ-ਟਾਈਮ ਡਿਜੀਟਲ ਟੈਕਸਟ ਸਕੈਨ
+      fetchLiveSubtitles(vid);
+      pollInterval = setInterval(() => {
+        fetchLiveSubtitles(vid);
+      }, 5000);
+
+    } else {
+      isRunning = false;
+      clearInterval(pollInterval);
+      document.getElementById('videoPlayer').src = "";
+      btn.className = "btn";
+      document.getElementById('btnText').innerText = "ਲਾਈਵ ਚਲਾਓ ਤੇ ਕੱਢੋ";
+      status.innerText = "ਸਥਿਤੀ: ਰੋਕਿਆ ਗਿਆ";
+      status.style.color = "#94a3b8";
+      badge.innerText = "ਕੋਈ ਸਟ੍ਰੀਮ ਨਹੀਂ";
+      badge.style.color = "#64748b";
+    }
+  }
+
+  function copyAllText() {
+    const lines = document.querySelectorAll('.log-line');
+    let text = "";
+    lines.forEach(l => text += l.innerText + "\n");
+    if (!text) { alert("ਕੋਈ ਟੈਕਸਟ ਮੌਜੂਦ ਨਹੀਂ ਹੈ!"); return; }
+    navigator.clipboard.writeText(text).then(() => alert("ਪੂਰਾ ਪੰਜਾਬੀ ਟੈਕਸਟ ਕਾਪੀ ਹੋ ਗਿਆ!"));
+  }
+
+  function clearBox() {
+    seenItems.clear();
+    document.getElementById('transcriptContainer').innerHTML = '<div class="empty-hint" id="hintBox">ਟੈਕਸਟ ਸਾਫ਼ ਕੀਤਾ ਗਿਆ। ਨਵੀਂ ਲਿਖਤ ਇੱਥੇ ਦਿਖਾਈ ਦੇਵੇਗੀ...</div>';
   }
 </script>
 </body>
