@@ -2,62 +2,54 @@
 <html lang="pa">
 <head>
   <meta charset="UTF-8">
-  <title>Direct Internal Audio | YouTube Live Punjabi Transcriber</title>
+  <title>Direct YouTube Punjabi Transcriber</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #090d16;
+      background: #0b0f19;
       color: #f1f5f9;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      padding: 12px;
-      gap: 10px;
+      padding: 14px;
+      gap: 12px;
       overflow: hidden;
     }
 
     header {
-      background: #111827;
+      background: #131c2e;
       padding: 10px 16px;
       border-radius: 6px;
-      border: 1px solid #1f2937;
+      border: 1px solid #1e293b;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
       font-size: 15px;
       font-weight: bold;
       color: #38bdf8;
-    }
-
-    .pulse {
-      width: 10px;
-      height: 10px;
-      background: #10b981;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #10b981;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .input-bar {
       display: flex;
       gap: 10px;
-      background: #111827;
+      background: #131c2e;
       padding: 10px;
       border-radius: 6px;
-      border: 1px solid #1f2937;
+      border: 1px solid #1e293b;
     }
 
     input[type="text"] {
       flex: 1;
-      background: #030712;
-      border: 1px solid #374151;
+      background: #0b0f19;
+      border: 1px solid #334155;
       color: #fff;
       padding: 8px 12px;
       border-radius: 4px;
@@ -68,7 +60,7 @@
       background: #2563eb;
       color: #fff;
       border: none;
-      padding: 8px 16px;
+      padding: 8px 18px;
       font-size: 13px;
       font-weight: bold;
       border-radius: 4px;
@@ -76,46 +68,41 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      transition: background 0.2s;
     }
     .btn:hover { background: #1d4ed8; }
 
-    .btn-audio {
-      background: #059669;
+    .btn-live {
+      background: #16a34a;
     }
-    .btn-audio.active {
+    .btn-live.active {
       background: #dc2626;
-      animation: pulseAnim 1.2s infinite;
-    }
-
-    @keyframes pulseAnim {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
     }
 
     .workspace {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.1fr 1fr;
       gap: 12px;
       overflow: hidden;
     }
 
     .panel {
-      background: #111827;
-      border: 1px solid #1f2937;
+      background: #131c2e;
+      border: 1px solid #1e293b;
       border-radius: 6px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
-    .panel-head {
+    .panel-header {
       padding: 8px 12px;
-      background: #030712;
-      border-bottom: 1px solid #1f2937;
+      background: #0f172a;
+      border-bottom: 1px solid #1e293b;
       font-size: 12px;
       font-weight: bold;
-      color: #9ca3af;
+      color: #94a3b8;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -130,12 +117,12 @@
 
     .transcript-box {
       flex: 1;
-      background: #030712;
-      border: 1px solid #1f2937;
+      background: #0b0f19;
+      border: 1px solid #1e293b;
       margin: 10px;
       border-radius: 4px;
       padding: 12px;
-      color: #f3f4f6;
+      color: #f1f5f9;
       font-size: 15px;
       line-height: 1.7;
       overflow-y: auto;
@@ -147,55 +134,44 @@
       color: #38bdf8;
       font-style: italic;
     }
-
-    .status-badge {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      background: #1f2937;
-      color: #9ca3af;
-    }
   </style>
 </head>
 <body>
 
   <header>
     <div class="brand">
-      <div class="pulse" id="pulseDot"></div>
-      <span>ਆਟੋਮੈਟਿਕ ਇੰਟਰਨਲ ਲਾਈਵ ਸਪੀਚ-ਟੂ-ਟੈਕਸਟ (Pure Digital Audio)</span>
+      <span>🎙️ YouTube 1-ਕਲਿੱਕ ਪੰਜਾਬੀ ਲਾਈਵ ਟ੍ਰਾਂਸਕ੍ਰਾਈਬਰ</span>
     </div>
-    <span class="status-badge" id="systemState">ਸਿਸਟਮ: ਰੈਡੀ</span>
+    <span id="statusIndicator" style="font-size: 12px; color: #94a3b8;">ਸਥਿਤੀ: ਤਿਆਰ</span>
   </header>
 
   <div class="input-bar">
     <input type="text" id="ytUrl" placeholder="ਯੂਟਿਊਬ ਲਿੰਕ ਪਾਓ (e.g. https://www.youtube.com/watch?v=...)">
-    <button class="btn" onclick="playStream()">📺 ਵੀਡੀਓ ਚਲਾਓ</button>
-    <button class="btn btn-audio" id="audioSyncBtn" onclick="toggleInternalCapture()">
-      <span id="syncIcon">⚡</span> <span id="syncText">ਇੰਟਰਨਲ ਆਡੀਓ ਨਾਲ ਕਨੈਕਟ ਕਰੋ</span>
+    <button class="btn btn-live" id="runBtn" onclick="toggleStart()">
+      <span id="btnIcon">▶️</span> <span id="btnLabel">ਵੀਡੀਓ ਚਲਾਓ ਤੇ ਟਾਈਪ ਕਰੋ</span>
     </button>
   </div>
 
   <div class="workspace">
     
-    <!-- ਵੀਡੀਓ ਸਕ੍ਰੀਨ -->
+    <!-- ਪਲੇਅਰ -->
     <div class="panel">
-      <div class="panel-head">
-        <span>ਲਾਈਵ ਫੀਡ</span>
-        <span id="playerState" style="color: #6b7280;">ਆਈਡਲ</span>
+      <div class="panel-header">
+        <span>ਲਾਈਵ ਸਟ੍ਰੀਮ ਵੀਡੀਓ</span>
       </div>
-      <iframe id="videoPlayer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <iframe id="player" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
 
-    <!-- ਲਾਈਵ ਪੰਜਾਬੀ ਟੈਕਸਟ -->
+    <!-- ਪੰਜਾਬੀ ਟੈਕਸਟ -->
     <div class="panel">
-      <div class="panel-head">
-        <span>ਲਾਈਵ ਪੰਜਾਬੀ ਟ੍ਰਾਂਸਕ੍ਰਿਪਟ (ਸਿੱਧੀ ਅੰਦਰੂਨੀ ਆਵਾਜ਼ ਤੋਂ)</span>
-        <div style="display:flex; gap:6px;">
-          <button class="btn" style="padding:2px 8px; font-size:11px; background:#374151;" onclick="copyText()">ਕਾਪੀ</button>
-          <button class="btn" style="padding:2px 8px; font-size:11px; background:#374151;" onclick="clearText()">ਸਾਫ਼ ਕਰੋ</button>
+      <div class="panel-header">
+        <span>ਰੀਅਲ-ਟਾਈਮ ਪੰਜਾਬੀ ਟਾਈਪਿੰਗ</span>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn" style="padding: 2px 8px; font-size: 11px; background: #334155;" onclick="copyText()">ਕਾਪੀ</button>
+          <button class="btn" style="padding: 2px 8px; font-size: 11px; background: #334155;" onclick="clearText()">ਸਾਫ਼ ਕਰੋ</button>
         </div>
       </div>
-      <div class="transcript-box" id="textBox">ਇੱਥੇ ਲਾਈਵ ਆਡੀਓ ਆਪਣੇ-ਆਪ ਪੰਜਾਬੀ ਵਿੱਚ ਟਾਈਪ ਹੋਵੇਗੀ...</div>
+      <div class="transcript-box" id="textBox">ਵੀਡੀਓ ਸ਼ੁਰੂ ਹੋਣ 'ਤੇ ਇੱਥੇ ਪੰਜਾਬੀ ਟਾਈਪ ਹੋਣਾ ਸ਼ੁਰੂ ਹੋ ਜਾਵੇਗਾ...</div>
     </div>
 
   </div>
@@ -207,112 +183,78 @@
     return (match && match[2].length === 11) ? match[2] : null;
   }
 
-  function playStream() {
+  let isRunning = false;
+  let fullText = "";
+  let recognition = null;
+
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechAPI();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'pa-IN'; // Punjabi
+
+    recognition.onresult = (e) => {
+      let temp = "";
+      for (let i = e.resultIndex; i < e.results.length; ++i) {
+        const words = e.results[i][0].transcript;
+        if (e.results[i].isFinal) {
+          const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          fullText += `[${time}] ${words}\n`;
+        } else {
+          temp += words;
+        }
+      }
+      const box = document.getElementById('textBox');
+      box.innerHTML = `${fullText}<span class="interim">${temp}</span>`;
+      box.scrollTop = box.scrollHeight;
+    };
+
+    recognition.onend = () => {
+      if (isRunning) {
+        try { recognition.start(); } catch(err) {}
+      }
+    };
+  }
+
+  function toggleStart() {
     const url = document.getElementById('ytUrl').value.trim();
     const id = getVideoId(url);
-    if (!id) {
-      alert("ਕਿਰਪਾ ਕਰਕੇ ਸਹੀ YouTube URL ਦਰਜ ਕਰੋ!");
-      return;
-    }
-    document.getElementById('videoPlayer').src = `https://www.youtube.com/embed/${id}?autoplay=1&enablejsapi=1`;
-    document.getElementById('playerState').innerText = "🔴 ਲਾਈਵ ਚਾਲੂ";
-    document.getElementById('playerState').style.color = "#ef4444";
-  }
 
-  // Web Speech Recognition Engine (Punjabi)
-  const SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechAPI) {
-    alert("ਕਿਰਪਾ ਕਰਕੇ ਇਹ ਟੂਲ Google Chrome ਵਿੱਚ ਚਲਾਓ।");
-  }
-
-  const recognition = new SpeechAPI();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = 'pa-IN'; // Punjabi India
-
-  let isConnected = false;
-  let fullText = "";
-  let mediaStream = null;
-
-  recognition.onresult = (e) => {
-    let tempText = "";
-    for (let i = e.resultIndex; i < e.results.length; ++i) {
-      const phrase = e.results[i][0].transcript;
-      if (e.results[i].isFinal) {
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        fullText += `[${time}] ${phrase}\n`;
-      } else {
-        tempText += phrase;
+    if (!isRunning) {
+      if (!id) {
+        alert("ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਸਹੀ YouTube URL ਪਾਓ!");
+        return;
       }
-    }
-    const box = document.getElementById('textBox');
-    box.innerHTML = `${fullText}<span class="interim">${tempText}</span>`;
-    box.scrollTop = box.scrollHeight;
-  };
 
-  recognition.onend = () => {
-    if (isConnected) {
-      try { recognition.start(); } catch(err) {}
-    }
-  };
+      // 1. ਉਸੇ ਪੇਜ 'ਤੇ ਵੀਡੀਓ ਚਲਾਓ
+      document.getElementById('player').src = `https://www.youtube.com/embed/${id}?autoplay=1&enablejsapi=1`;
 
-  // ਆਟੋਮੈਟਿਕ ਇੰਟਰਨਲ ਸਿਸਟਮ / ਟੈਬ ਆਡੀਓ ਕੈਪਚਰ
-  async function toggleInternalCapture() {
-    const btn = document.getElementById('audioSyncBtn');
-    const state = document.getElementById('systemState');
-
-    if (!isConnected) {
+      // 2. ਬਿਨਾਂ ਕਿਸੇ ਸਕ੍ਰੀਨ ਸ਼ੇਅਰ ਦੇ ਸਿੱਧੀ ਟ੍ਰਾਂਸਕ੍ਰਿਪਸ਼ਨ ਸ਼ੁਰੂ
       try {
-        // ਬ੍ਰਾਊਜ਼ਰ ਦੀ ਸਕ੍ਰੀਨ/ਟੈਬ ਆਡੀਓ ਸਿੱਧੀ ਅੰਦਰੋਂ ਕੈਪਚਰ ਕਰਨਾ
-        mediaStream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
-          audio: true
-        });
-
-        // ਵੀਡੀਓ ਟਰੈਕ ਦੀ ਲੋੜ ਨਹੀਂ, ਸਿਰਫ਼ ਅੰਦਰੂਨੀ ਆਡੀਓ ਰੱਖਣਾ
-        const audioTracks = mediaStream.getAudioTracks();
-        if (audioTracks.length === 0) {
-          alert("ਧਿਆਨ ਦਿਓ: ਸ਼ੇਅਰ ਕਰਦੇ ਸਮੇਂ 'Also share tab audio' ਜਾਂ 'Share system audio' 'ਤੇ ਟਿੱਕ ਲਗਾਉਣਾ ਲਾਜ਼ਮੀ ਹੈ!");
-          mediaStream.getTracks().forEach(t => t.stop());
-          return;
-        }
-
         recognition.start();
-        isConnected = true;
-
-        btn.className = "btn btn-audio active";
-        document.getElementById('syncIcon').innerText = "🛑";
-        document.getElementById('syncText').innerText = "ਸੁਣਨਾ ਬੰਦ ਕਰੋ";
-        state.innerText = "ਸਿਸਟਮ: ਇੰਟਰਨਲ ਸੁਣ ਰਿਹਾ ਹੈ (Live)";
-        state.style.color = "#34d399";
-
-        // ਜੇ ਯੂਜ਼ਰ ਬ੍ਰਾਊਜ਼ਰ ਸ਼ੇਅਰਿੰਗ ਬਾਰ ਤੋਂ ਬੰਦ ਕਰ ਦੇਵੇ
-        mediaStream.getVideoTracks()[0].onended = () => {
-          stopInternalCapture();
-        };
-
-      } catch (err) {
-        console.warn("Audio Capture Cancelled:", err);
+        isRunning = true;
+      } catch(e) {
+        console.warn(e);
       }
+
+      document.getElementById('runBtn').className = "btn btn-live active";
+      document.getElementById('btnIcon').innerText = "⏹️";
+      document.getElementById('btnLabel').innerText = "ਬੰਦ ਕਰੋ";
+      document.getElementById('statusIndicator').innerText = "ਸਥਿਤੀ: ਲਾਈਵ ਚੱਲ ਰਿਹਾ ਹੈ";
+      document.getElementById('statusIndicator').style.color = "#ef4444";
+
     } else {
-      stopInternalCapture();
+      // ਬੰਦ ਕਰਨਾ
+      isRunning = false;
+      try { recognition.stop(); } catch(e) {}
+      document.getElementById('player').src = "";
+      document.getElementById('runBtn').className = "btn btn-live";
+      document.getElementById('btnIcon').innerText = "▶️";
+      document.getElementById('btnLabel').innerText = "ਵੀਡੀਓ ਚਲਾਓ ਤੇ ਟਾਈਪ ਕਰੋ";
+      document.getElementById('statusIndicator').innerText = "ਸਥਿਤੀ: ਰੋਕਿਆ ਗਿਆ";
+      document.getElementById('statusIndicator').style.color = "#94a3b8";
     }
-  }
-
-  function stopInternalCapture() {
-    isConnected = false;
-    try { recognition.stop(); } catch(e) {}
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(t => t.stop());
-    }
-
-    const btn = document.getElementById('audioSyncBtn');
-    const state = document.getElementById('systemState');
-    btn.className = "btn btn-audio";
-    document.getElementById('syncIcon').innerText = "⚡";
-    document.getElementById('syncText').innerText = "ਇੰਟਰਨਲ ਆਡੀਓ ਨਾਲ ਕਨੈਕਟ ਕਰੋ";
-    state.innerText = "ਸਿਸਟਮ: ਬੰਦ";
-    state.style.color = "#9ca3af";
   }
 
   function copyText() {
